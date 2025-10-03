@@ -102,10 +102,6 @@ join <- join %>%
   distinct (name, .keep_all = TRUE)
 
 
-#### WRITE THE DATA #####
-
-
-
 #### WRITE THE DATA ####
 
 write_xlsx(join,
