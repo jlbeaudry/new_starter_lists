@@ -14,7 +14,10 @@ library(writexl)
 
 rn = read_excel(here::here("data", "RN_new_starter_list.xlsx")) %>%
   clean_names() %>%
-  mutate(created_date = ymd(created_date), # use lubridate to turn the date into a date format
+    mutate(
+    across(where(is.character),
+           ~ str_squish(str_replace_all(.x, "[\r\n]+", " "))), # cleans up data if there are linebreaks
+          created_date = ymd(created_date), # use lubridate to turn the date into a date format
          list_date = ymd(list_date), 
          data_source = "ResearchNow") 
 
@@ -48,7 +51,7 @@ wd = read_excel(here::here("data", "Workday_all_research_staff.xlsx"),
          current_position_filled_date = ymd(current_position_filled_effective_date),
          data_source = "Workday") %>% 
   rename_at(all_of(wd_names), ~ rn_names) %>% 
-  mutate (list_date = ymd("2025-09-29")) %>% # add the date the Workday report was run
+  mutate (list_date = ymd("2026-03-16")) %>% # add the date the Workday report was run
 select(-c(current_position_filled_effective_date, end_employment_date))
 
 
@@ -59,7 +62,7 @@ select(-c(current_position_filled_effective_date, end_employment_date))
 wd <- wd %>% 
   mutate(position_worker_type = as.factor(position_worker_type)) %>% 
   filter (!position_worker_type %in% "Casual") %>% 
-  filter (worker_latest_hire_date > "2024-04-01") %>%  # the last faststart was in April
+  filter (worker_latest_hire_date > "2025-11-01") %>%  # the last faststart was in November
   mutate (mismatch_dates = as.numeric(worker_latest_hire_date - worker_original_hire_date)) %>% 
   relocate (mismatch_dates, .before = position_id) %>% 
   filter (mismatch_dates == 0)
@@ -100,6 +103,7 @@ join <- full_join (rn, wd) %>%
 
 join <- join %>% 
   distinct (name, .keep_all = TRUE)
+
 
 
 #### WRITE THE DATA ####
